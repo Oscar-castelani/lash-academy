@@ -8,24 +8,36 @@
  * Al hacer un deploy con cambios, subir el numero de version de CACHE_NAME
  * para que los dispositivos descarten el cache viejo.
  */
-const CACHE_NAME = "lash-academy-v7";
+const CACHE_NAME = "lash-academy-v9";
 
-const ASSETS = [
+/**
+ * Lo que hace falta para dibujar la pantalla. Se cachea antes de dar por
+ * instalado el service worker.
+ */
+const ASSETS_CRITICOS = [
   "./",
   "./index.html",
   "./config.js",
   "./manifest.json",
+  "./assets/cintia.jpg",
+  "./icons/icon.svg"
+];
+
+/**
+ * Los PNG del ícono pesan bastante y no los usa la pantalla: los descarga el
+ * sistema operativo al instalar la app. Se guardan igual, pero después, sin
+ * frenar la instalación ni competir con la primera carga.
+ */
+const ASSETS_SECUNDARIOS = [
   "./icons/icon-192.png",
   "./icons/icon-512.png",
-  "./icons/apple-touch-icon.png",
-  "./icons/icon.svg",
-  "./assets/cintia.jpg"
+  "./icons/apple-touch-icon.png"
 ];
 
 self.addEventListener("install", function (event) {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(function (cache) { return cache.addAll(ASSETS); })
+      .then(function (cache) { return cache.addAll(ASSETS_CRITICOS); })
       .then(function () { return self.skipWaiting(); })
   );
 });
@@ -41,6 +53,13 @@ self.addEventListener("activate", function (event) {
         );
       })
       .then(function () { return self.clients.claim(); })
+      .then(function () {
+        // Los íconos, recién ahora y sin bloquear nada. Si falla (por ejemplo
+        // porque se cortó la conexión), no importa: la app funciona igual.
+        return caches.open(CACHE_NAME).then(function (cache) {
+          return cache.addAll(ASSETS_SECUNDARIOS).catch(function () {});
+        });
+      })
   );
 });
 

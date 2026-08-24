@@ -30,7 +30,7 @@ whatsapp: "https://wa.me/XXXXXXXXXXX"
 ```
 
 Después de editar, subir la versión del cache en `service-worker.js`
-(`CACHE_NAME = "lash-academy-v7"`, `v8`, etc.) y desplegar. Sin ese cambio, los
+(`CACHE_NAME = "lash-academy-v10"`, `v11`, etc.) y desplegar. Sin ese cambio, los
 celulares que ya tienen la app instalada pueden seguir viendo la versión vieja
 durante un tiempo.
 
@@ -82,6 +82,32 @@ Cualquier conversor de SVG a PNG sirve. Los tamaños necesarios son 512x512,
 192x192 y 180x180. Como están declarados `maskable`, todo el dibujo tiene que
 quedar dentro del **80% central** de la imagen para que Android no lo recorte al
 aplicar la máscara circular del sistema (el SVG ya respeta ese margen).
+
+## Velocidad de carga
+
+La primera visita descarga **4 archivos, ~15 KB comprimidos**: el HTML (con el
+CSS y el JS adentro, sin pedidos extra), `config.js`, la foto y el SVG del
+ícono. No hay frameworks, ni webfonts, ni librerías externas.
+
+Las decisiones que sostienen ese número, por si alguien las toca sin querer:
+
+- **El CSS y el JS van dentro de `index.html`.** Son chicos; separarlos en
+  archivos sumaría dos pedidos de red sin ganar nada.
+- **El ícono del cartel de instalación usa el SVG (2 KB), no el PNG (20 KB)**, y
+  ni siquiera se pide en la carga inicial: se descarga recién cuando el cartel
+  aparece.
+- **Los PNG del ícono no se precachean al instalar el service worker.** Pesan
+  ~80 KB entre los tres y la pantalla no los usa: los descarga el sistema
+  operativo cuando se instala la app. Se guardan después, sin frenar nada.
+- **La foto está en 5 KB.** Si se reemplaza por una de mejor resolución (ver más
+  arriba), conviene que quede **por debajo de 40 KB**: exportarla como JPG con
+  calidad 80 y a 400x400 alcanza y sobra. Es el único archivo que no comprime el
+  servidor, porque el JPG ya viene comprimido.
+- Tanto GitHub Pages como Firebase comprimen con gzip/brotli automáticamente. No
+  hay que configurar nada.
+
+A partir de la segunda visita el service worker sirve todo desde el celular, así
+que la pantalla aparece al instante y sin usar datos.
 
 ## Probar en local
 
