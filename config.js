@@ -26,7 +26,15 @@ const CONFIG = {
   // Cuando se defina el número oficial con ManyChat, se cambia solo acá.
   whatsapp: "https://wa.me/5491138833558?text=%C2%A1Hola%20Cintia!%20Te%20escribo%20desde%20la%20app%20para%20hacerte%20una%20consulta%20%F0%9F%98%8A",
 
-  // Abre Google Maps con el pin del estudio (la app en el celular, la web en
-  // la computadora). Coordenadas: 34°31'21.4"S 58°45'37.1"O.
-  ubicacion: "https://www.google.com/maps/search/?api=1&query=-34.5226111,-58.7603055"
+  // Ubicación del estudio: 34°31'21.4"S 58°45'37.1"O.
+  //
+  // Hay dos enlaces al mismo punto porque cada teléfono trae su app de mapas.
+  // El código elige uno u otro según el dispositivo (ver index.html):
+  //  - Android y computadoras -> Google Maps.
+  //  - iPhone y iPad -> Mapas de Apple. Con un enlace de Google Maps, el
+  //    iPhone ofrece descargar la app de Google en vez de abrir el mapa.
+  //
+  // Si cambia la dirección, actualizar las coordenadas en LOS DOS.
+  ubicacion: "https://www.google.com/maps/search/?api=1&query=-34.5226111,-58.7603055",
+  ubicacionIOS: "https://maps.apple.com/?ll=-34.5226111,-58.7603055&q=Lash%20Academy%20Professional&z=17"
 };

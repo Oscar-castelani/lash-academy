@@ -620,6 +620,21 @@
 
   <script src="config.js"></script>
   <script>
+    // ¿iPhone o iPad? Se usa para dos cosas: el enlace de la ubicación y las
+    // instrucciones de instalación (más abajo).
+    function esApple() {
+      return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+             // iPad con iPadOS se identifica como Mac, pero tiene táctil.
+             (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    }
+
+    // La ubicación abre la app de mapas que el teléfono ya tiene. En iPhone,
+    // un enlace de Google Maps ofrece descargar la app de Google en vez de
+    // abrir el mapa, así que ahí se usa Mapas de Apple.
+    if (esApple() && CONFIG.ubicacionIOS) {
+      CONFIG.ubicacion = CONFIG.ubicacionIOS;
+    }
+
     // Asigna a cada enlace la URL correspondiente de CONFIG.
     document.querySelectorAll('[data-link]').forEach(function (el) {
       var url = CONFIG[el.dataset.link];
@@ -685,11 +700,7 @@
                document.referrer.indexOf('android-app://') === 0; // TWA
       }
 
-      function esIOS() {
-        return /iphone|ipad|ipod/i.test(ua) ||
-               // iPad con iPadOS se identifica como Mac, pero tiene táctil.
-               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      }
+      var esIOS = esApple; // definida más arriba, junto a los enlaces
 
       // Navegadores embebidos dentro de otra app (Instagram, Facebook, etc.).
       // Ninguno puede instalar una PWA.

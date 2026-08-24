@@ -30,9 +30,27 @@ whatsapp: "https://wa.me/XXXXXXXXXXX"
 ```
 
 Después de editar, subir la versión del cache en `service-worker.js`
-(`CACHE_NAME = "lash-academy-v13"`, `v11`, etc.) y desplegar. Sin ese cambio, los
+(`CACHE_NAME = "lash-academy-v14"`, `v11`, etc.) y desplegar. Sin ese cambio, los
 celulares que ya tienen la app instalada pueden seguir viendo la versión vieja
 durante un tiempo.
+
+## El botón de ubicación
+
+Hay dos enlaces al mismo punto en `config.js`, y el código elige según el
+dispositivo:
+
+| Dispositivo | Enlace | Qué abre |
+|---|---|---|
+| Android y computadoras | `ubicacion` | Google Maps |
+| iPhone y iPad | `ubicacionIOS` | Mapas de Apple |
+
+Es necesario porque en iPhone un enlace de Google Maps no abre el mapa: ofrece
+descargar la app de Google desde la App Store. Mapas de Apple ya viene
+instalado en todos los iPhone, así que abre directo.
+
+**Si cambia la dirección del estudio, hay que actualizar las coordenadas en los
+dos enlaces.** Están en el mismo formato (`latitud,longitud`) para que sea
+fácil de comparar.
 
 ## Cómo cambiar los colores
 
