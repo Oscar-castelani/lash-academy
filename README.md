@@ -30,7 +30,7 @@ whatsapp: "https://wa.me/XXXXXXXXXXX"
 ```
 
 Después de editar, subir la versión del cache en `service-worker.js`
-(`CACHE_NAME = "lash-academy-v11"`, `v11`, etc.) y desplegar. Sin ese cambio, los
+(`CACHE_NAME = "lash-academy-v12"`, `v11`, etc.) y desplegar. Sin ese cambio, los
 celulares que ya tienen la app instalada pueden seguir viendo la versión vieja
 durante un tiempo.
 
@@ -273,6 +273,26 @@ final de `index.html`. El botón **Instalar** está siempre y siempre hace algo:
 2. **Cualquier otro caso** (iPhone, navegador embebido, Firefox, o un Chrome que
    todavía no disparó el evento): el botón despliega los pasos concretos para
    ese navegador.
+
+### Por qué en iPhone no se instala con un toque
+
+No es una limitación de la app: **Apple no le da a las páginas web ninguna
+forma de instalarse solas**. El evento `beforeinstallprompt` no existe en
+Safari y no hay API equivalente. "Agregar a inicio" solo lo puede disparar la
+persona desde el menú Compartir; ningún sitio web puede hacerlo por ella, ni
+las apps grandes.
+
+En Android sí funciona con un toque: el botón abre el diálogo del sistema y la
+app se instala sola.
+
+Por eso en iPhone el botón despliega los tres pasos con el ícono real de
+Compartir dibujado dentro del texto y una flecha que apunta a la barra de
+Safari, que es donde está ese botón. Es lo más cerca de "automático" que la
+plataforma permite.
+
+Si la persona está en Chrome o Firefox de iPhone, el cartel le pide que abra el
+enlace en Safari: en esos navegadores el menú de compartir está en otro lugar y
+confunde.
 
 ### El caso del navegador de Instagram
 

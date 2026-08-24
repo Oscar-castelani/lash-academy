@@ -346,6 +346,35 @@
 
     .install__pasos[hidden] { display: none; }
 
+    /* Cada paso en su renglón, con aire entre uno y otro. */
+    .install__paso {
+      display: block;
+      margin-top: 5px;
+    }
+
+    /* El ícono de Compartir de iOS, embebido en el texto del paso 1. */
+    .install__glifo {
+      width: 1.15em;
+      height: 1.15em;
+      vertical-align: -0.25em;
+    }
+
+    /* Flecha que apunta a la barra de Safari, que es donde está Compartir. */
+    .install__flecha {
+      display: block;
+      margin-top: 2px;
+      text-align: center;
+      font-size: 1.2rem;
+      line-height: 1;
+      color: var(--color-install-btn);
+      animation: install-rebote 1.4s ease-in-out infinite;
+    }
+
+    @keyframes install-rebote {
+      0%, 100% { transform: translateY(0); opacity: 0.55; }
+      50%      { transform: translateY(4px); opacity: 1; }
+    }
+
     /* Agranda el área táctil de la X a 48px sin agrandar el dibujo. */
     .install__close::after {
       content: "";
@@ -510,6 +539,7 @@
     /* Respeta a quien pidió menos movimiento en el sistema. */
     @media (prefers-reduced-motion: reduce) {
       .action, .social__link, .install, .install__btn { transition: none; }
+      .install__flecha { animation: none; opacity: 0.8; }
       .action:active, .social__link:active, .install__btn:active { transform: none; }
       .install { transform: translateX(-50%) translateY(0); }
     }
@@ -658,6 +688,12 @@
         return /Instagram|FBAN|FBAV|FB_IAB|FBIOS|Line\/|TikTok|Twitter/i.test(ua);
       }
 
+      // Chrome, Firefox y Edge en iPhone. Por dentro son Safari, pero el menú
+      // de compartir está en otro lado y confunde: conviene mandar a Safari.
+      function esOtroNavegadorEnIOS() {
+        return esIOS() && /CriOS|FxiOS|EdgiOS|OPT\//i.test(ua);
+      }
+
       function descartadoHacePoco() {
         try {
           var t = parseInt(localStorage.getItem(CLAVE_DESCARTE), 10);
@@ -704,6 +740,15 @@
         setTimeout(function () { cartel.hidden = true; }, 320);
       }
 
+      // El ícono real de "Compartir" de iOS, para que no haya que adivinar
+      // cuál es.
+      var GLIFO_COMPARTIR =
+        '<svg class="install__glifo" viewBox="0 0 24 24" aria-hidden="true">' +
+        '<path d="M8.6 10.4H7a1.5 1.5 0 0 0-1.5 1.5v8a1.5 1.5 0 0 0 1.5 1.5h10a1.5 ' +
+        '1.5 0 0 0 1.5-1.5v-8a1.5 1.5 0 0 0-1.5-1.5h-1.6M12 14.6V3.2m0 0L8.7 6.5' +
+        'M12 3.2l3.3 3.3" fill="none" stroke="currentColor" stroke-width="1.9" ' +
+        'stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
       // Los pasos que hay que seguir cuando el navegador no ofrece el diálogo
       // nativo. Se arma según dónde esté abierta la página.
       function textoDePasos() {
@@ -713,10 +758,22 @@
                  '<strong>"Abrir en el navegador"</strong> (Chrome o Safari). ' +
                  'Ahí sí vas a poder instalarla.';
         }
+        if (esOtroNavegadorEnIOS()) {
+          return '<strong>Abrí este enlace en Safari</strong> para poder ' +
+                 'instalarla. En iPhone, agregar una app a la pantalla de ' +
+                 'inicio solo funciona bien desde Safari.';
+        }
         if (esIOS()) {
-          return '1. Tocá <strong>Compartir</strong> (el cuadradito con la flecha).<br>' +
-                 '2. Deslizá y elegí <strong>"Agregar a inicio"</strong>.<br>' +
-                 '3. Tocá <strong>Agregar</strong>.';
+          // iPhone no tiene instalación con un toque: Apple no le da esa
+          // posibilidad a las páginas web. Solo se puede guiar a la persona.
+          return '<strong>En iPhone lo hace Apple, no la app.</strong> Son 3 toques:' +
+                 '<span class="install__paso">1. Tocá ' + GLIFO_COMPARTIR +
+                 ' <strong>Compartir</strong>, en la barra de abajo.</span>' +
+                 '<span class="install__paso">2. Deslizá hacia abajo y elegí ' +
+                 '<strong>"Agregar a inicio"</strong>.</span>' +
+                 '<span class="install__paso">3. Tocá <strong>Agregar</strong>, ' +
+                 'arriba a la derecha.</span>' +
+                 '<span class="install__flecha" aria-hidden="true">↓</span>';
         }
         return '1. Tocá el menú <strong>⋮</strong> arriba a la derecha.<br>' +
                '2. Elegí <strong>"Instalar aplicación"</strong> o ' +
