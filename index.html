@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Lash Academy Professional</title>
+  <meta name="description" content="Reservá tu turno, inscribite a los cursos y comprá insumos de Lash Academy Professional.">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4A1F45">
+
+  <!-- iOS (Agregar a inicio desde Safari) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Lash Academy">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+
+  <style>
+    /* ====================================================================
+       PALETA — tomada de la página de Ágora (degradado violeta a magenta,
+       botones blancos con texto oscuro).
+       Para cambiar la estética, tocar SOLO estas variables. Si cambia
+       --color-bg-top, actualizar también theme_color en manifest.json y el
+       <meta name="theme-color"> de más arriba.
+       ==================================================================== */
+    :root {
+      --color-bg-top: #4A1F45;      /* extremo superior del degradado */
+      --color-bg-mid: #8A4485;      /* punto medio */
+      --color-bg-bottom: #D98FD4;   /* extremo inferior */
+
+      --color-surface: #FFFFFF;                 /* botones principales */
+      --color-text-on-surface: #2E2130;
+      --color-hint-on-surface: #6D5A6E;
+
+      --color-heading: #FFFFFF;
+      --color-subtitle: rgba(255, 255, 255, 0.78);
+
+      --color-social-bg: rgba(255, 255, 255, 0.18);
+      --color-social-border: rgba(255, 255, 255, 0.35);
+      --color-social-icon: #FFFFFF;
+
+      --color-install-btn: #7A3A76;      /* boton "Instalar" del cartel */
+      --color-install-btn-text: #FFFFFF;
+
+      --color-focus: #FFFFFF;
+
+      --font-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                   "Helvetica Neue", Arial, sans-serif;
+
+      /* Medidas que cambian por breakpoint (ver media queries al final). */
+      --content-max-width: 400px;
+      --logo-size: 118px;
+      --action-min-height: 72px;
+      --action-radius: 14px;
+      --stack-gap: 14px;    /* separación entre los botones */
+      --block-gap: 26px;    /* separación entre bloques (header/botones/redes) */
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      /* Pinta el rebote del scroll en iOS con el color del final del degradado. */
+      background-color: var(--color-bg-bottom);
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh; /* los navegadores viejos ignoran esta línea */
+
+      background-color: var(--color-bg-mid); /* fallback si no hay degradado */
+      background-image: linear-gradient(
+        180deg,
+        var(--color-bg-top) 0%,
+        var(--color-bg-mid) 48%,
+        var(--color-bg-bottom) 100%
+      );
+      background-repeat: no-repeat;
+
+      color: var(--color-heading);
+      font-family: var(--font-base);
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+
+      display: flex;
+      flex-direction: column;
+      padding:
+        calc(28px + env(safe-area-inset-top))
+        calc(20px + env(safe-area-inset-right))
+        calc(28px + env(safe-area-inset-bottom))
+        calc(20px + env(safe-area-inset-left));
+    }
+
+    /* Centrado vertical con margin auto en vez de justify-content: si el
+       contenido no entra (pantallas bajas / landscape), no se recorta arriba. */
+    main {
+      width: 100%;
+      max-width: var(--content-max-width);
+      margin: auto;
+    }
+
+    /* Encabezado --------------------------------------------------------- */
+    .header {
+      text-align: center;
+      margin-bottom: var(--block-gap);
+    }
+
+    .header__logo {
+      width: var(--logo-size);
+      height: var(--logo-size);
+      display: block;
+      margin: 0 auto 16px;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 0 6px 20px rgba(30, 8, 28, 0.28);
+
+      /* La foto es cuadrada y el contenedor tambien: "cover" la encuadra sin
+         estirarla ni recortar la cara. Si alguna vez se cambia por una foto
+         rectangular, ajustar object-position para dejar la cara centrada. */
+      object-fit: cover;
+      object-position: center center;
+      background-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .header__title {
+      margin: 0;
+      font-size: clamp(1.25rem, 5.6vw, 1.75rem);
+      line-height: 1.2;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .header__subtitle {
+      margin: 8px 0 0;
+      font-size: clamp(0.85rem, 3.6vw, 1rem);
+      color: var(--color-subtitle);
+    }
+
+    /* Botones principales ------------------------------------------------ */
+    .actions {
+      display: block;
+      margin-bottom: var(--block-gap);
+    }
+
+    .action {
+      /* Área táctil holgada, por encima del mínimo de 44px. */
+      min-height: var(--action-min-height);
+      padding: 14px 18px;
+      border-radius: var(--action-radius);
+      text-decoration: none;
+
+      background-color: var(--color-surface);
+      color: var(--color-text-on-surface);
+      box-shadow: 0 4px 14px rgba(43, 12, 40, 0.18);
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+
+      transition: transform 120ms ease, opacity 120ms ease;
+    }
+
+    .action + .action {
+      margin-top: var(--stack-gap);
+    }
+
+    .action:active {
+      transform: scale(0.97);
+      opacity: 0.92;
+    }
+
+    .action:focus-visible {
+      outline: 3px solid var(--color-focus);
+      outline-offset: 3px;
+    }
+
+    .action__label {
+      font-size: clamp(1rem, 4.2vw, 1.15rem);
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .action__hint {
+      margin-top: 3px;
+      font-size: clamp(0.78rem, 3.2vw, 0.9rem);
+      color: var(--color-hint-on-surface);
+      line-height: 1.25;
+    }
+
+    /* Redes sociales ------------------------------------------------------ */
+    .social {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .social__link {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: var(--color-social-bg);
+      border: 1px solid var(--color-social-border);
+      color: var(--color-social-icon);
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      transition: transform 120ms ease, opacity 120ms ease;
+    }
+
+    .social__link + .social__link {
+      margin-left: 16px;
+    }
+
+    .social__link:active {
+      transform: scale(0.92);
+      opacity: 0.85;
+    }
+
+    .social__link:focus-visible {
+      outline: 3px solid var(--color-focus);
+      outline-offset: 3px;
+    }
+
+    .social__link svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+
+    /* Cartel flotante de instalación ------------------------------------- */
+    .install {
+      position: fixed;
+      z-index: 10;
+      left: 50%;
+      bottom: calc(14px + env(safe-area-inset-bottom));
+      width: calc(100% - 28px);
+      max-width: var(--content-max-width);
+
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 16px;
+
+      background-color: rgba(255, 255, 255, 0.97);
+      color: var(--color-text-on-surface);
+      box-shadow: 0 10px 30px rgba(20, 5, 20, 0.38);
+
+      /* Entra deslizándose desde abajo cuando se le agrega .is-visible. */
+      opacity: 0;
+      transform: translateX(-50%) translateY(140%);
+      transition: transform 320ms ease, opacity 320ms ease;
+    }
+
+    /* Necesario porque .install fija display:flex y pisaría a [hidden]. */
+    .install[hidden] { display: none; }
+
+    .install.is-visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .install__icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      flex-shrink: 0;
+    }
+
+    .install__text {
+      flex: 1 1 auto;
+      min-width: 0;
+      margin: 0 10px;
+    }
+
+    .install__title {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .install__hint {
+      display: block;
+      margin-top: 2px;
+      font-size: 0.78rem;
+      line-height: 1.25;
+      color: var(--color-hint-on-surface);
+    }
+
+    .install__btn {
+      flex-shrink: 0;
+      min-height: 44px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 12px;
+      background-color: var(--color-install-btn);
+      color: var(--color-install-btn-text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 120ms ease, opacity 120ms ease;
+    }
+
+    .install__btn:active { transform: scale(0.96); opacity: 0.9; }
+
+    .install__close {
+      position: relative;
+      flex-shrink: 0;
+      width: 34px;
+      height: 34px;
+      margin-left: 4px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background-color: transparent;
+      color: var(--color-hint-on-surface);
+      font-family: inherit;
+      font-size: 1.4rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    /* Agranda el área táctil de la X a 48px sin agrandar el dibujo. */
+    .install__close::after {
+      content: "";
+      position: absolute;
+      top: -7px; right: -7px; bottom: -7px; left: -7px;
+    }
+
+    .install__close:active { opacity: 0.6; }
+
+    .install__btn:focus-visible,
+    .install__close:focus-visible {
+      outline: 3px solid var(--color-install-btn);
+      outline-offset: 2px;
+    }
+
+    /* Mientras el cartel está visible, se deja aire abajo para que nunca tape
+       los íconos de redes. */
+    body.has-install { padding-bottom: calc(104px + env(safe-area-inset-bottom)); }
+
+    /* ====================================================================
+       RESPONSIVE
+       Base = celular chico. De ahí para arriba solo se agranda.
+       ==================================================================== */
+
+    /* Android viejos y iPhone SE / 5 (320-360px de ancho). */
+    @media (max-width: 359px) {
+      :root {
+        --logo-size: 88px;
+        --action-min-height: 64px;
+        --stack-gap: 12px;
+        --block-gap: 20px;
+      }
+      body { padding-left: 14px; padding-right: 14px; }
+      .social__link { width: 44px; height: 44px; }
+      .social__link + .social__link { margin-left: 12px; }
+
+      .install { padding: 8px 10px; }
+      .install__icon { width: 36px; height: 36px; }
+      .install__text { margin: 0 8px; }
+      .install__title { font-size: 0.88rem; }
+      .install__hint { font-size: 0.72rem; }
+      .install__btn { padding: 0 12px; font-size: 0.85rem; }
+      .install__close { width: 28px; margin-left: 0; }
+    }
+
+    /* Celulares grandes: iPhone Pro Max, Android de 6.5"+ (410px en adelante). */
+    @media (min-width: 410px) {
+      :root {
+        --content-max-width: 420px;
+        --logo-size: 128px;
+        --block-gap: 30px;
+      }
+    }
+
+    /* Tablets chicas y celulares plegables abiertos (iPad mini, Galaxy Tab). */
+    @media (min-width: 600px) {
+      :root {
+        --content-max-width: 480px;
+        --logo-size: 152px;
+        --action-min-height: 84px;
+        --action-radius: 18px;
+        --stack-gap: 18px;
+        --block-gap: 36px;
+      }
+      .header__title { font-size: 2rem; }
+      .header__subtitle { font-size: 1.05rem; }
+      .action__label { font-size: 1.25rem; }
+      .action__hint { font-size: 0.95rem; }
+      .social__link { width: 56px; height: 56px; }
+      .social__link + .social__link { margin-left: 20px; }
+      .social__link svg { width: 26px; height: 26px; }
+
+      .install { padding: 14px; border-radius: 20px; }
+      .install__icon { width: 52px; height: 52px; border-radius: 14px; }
+      .install__text { margin: 0 14px; }
+      .install__title { font-size: 1.05rem; }
+      .install__hint { font-size: 0.88rem; }
+      .install__btn { min-height: 48px; padding: 0 22px; font-size: 1rem; }
+      body.has-install { padding-bottom: calc(126px + env(safe-area-inset-bottom)); }
+    }
+
+    /* Tablets grandes (iPad Pro) y escritorio. */
+    @media (min-width: 900px) {
+      :root {
+        --content-max-width: 520px;
+        --logo-size: 168px;
+      }
+      .header__title { font-size: 2.25rem; }
+    }
+
+    /* Tablet acostada o ventana ancha pero baja: se vuelve a las medidas de
+       celular, si no el contenido no entra a lo alto. */
+    @media (min-width: 600px) and (max-height: 800px) {
+      :root {
+        --logo-size: 116px;
+        --action-min-height: 72px;
+        --stack-gap: 14px;
+        --block-gap: 24px;
+      }
+      .header__title { font-size: 1.6rem; }
+      .header__subtitle { font-size: 0.95rem; }
+      .action__label { font-size: 1.1rem; }
+      .action__hint { font-size: 0.88rem; }
+      .social__link { width: 50px; height: 50px; }
+      .social__link svg { width: 24px; height: 24px; }
+      body.has-install { padding-bottom: calc(108px + env(safe-area-inset-bottom)); }
+    }
+
+    /* Pantallas bajas: celular acostado y teclados abiertos. Se compacta todo
+       y, si aun así no entra, la página scrollea sin recortar el encabezado. */
+    @media (max-height: 520px) {
+      :root {
+        --logo-size: 74px;
+        --action-min-height: 56px;
+        --stack-gap: 10px;
+        --block-gap: 16px;
+      }
+      body { padding-top: 14px; padding-bottom: 14px; }
+      .header__logo { margin-bottom: 10px; }
+      .header__title { font-size: 1.15rem; }
+      .header__subtitle { font-size: 0.85rem; }
+      /* Anula los tamaños grandes del breakpoint de tablet: un celular
+         acostado es ancho pero muy bajo. */
+      .action { min-height: var(--action-min-height); padding: 10px 16px; }
+      .action__label { font-size: 1rem; }
+      .action__hint { font-size: 0.82rem; }
+      .social__link { width: 44px; height: 44px; }
+      .social__link svg { width: 22px; height: 22px; }
+
+      /* En pantallas bajas no hay lugar para un cartel flotante sin tapar los
+         íconos: pasa a ser parte del flujo, justo debajo de las redes. */
+      .install {
+        position: static;
+        width: 100%;
+        max-width: var(--content-max-width);
+        margin: 16px auto 0;
+        padding: 6px 10px;
+        opacity: 1;
+        transform: none;
+      }
+      .install.is-visible { transform: none; }
+      .install__icon { width: 34px; height: 34px; }
+      .install__hint { font-size: 0.72rem; }
+      body.has-install { padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
+    }
+
+    /* Respeta a quien pidió menos movimiento en el sistema. */
+    @media (prefers-reduced-motion: reduce) {
+      .action, .social__link, .install, .install__btn { transition: none; }
+      .action:active, .social__link:active, .install__btn:active { transform: none; }
+      .install { transform: translateX(-50%) translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="header">
+      <img class="header__logo" id="logo" src="assets/cintia.jpg"
+           alt="Cintia Pereyra" width="150" height="150">
+      <h1 class="header__title">Lash Academy Professional</h1>
+      <p class="header__subtitle">Cintia Pereyra</p>
+    </header>
+
+    <!-- Los href se asignan desde config.js (ver script al final del body). -->
+    <nav class="actions">
+      <a class="action" data-link="turnos" target="_blank" rel="noopener noreferrer">
+        <span class="action__label">Reservar turno</span>
+        <span class="action__hint">Servicios y cursos</span>
+      </a>
+
+      <a class="action" data-link="insumos" target="_blank" rel="noopener noreferrer">
+        <span class="action__label">Comprar insumos</span>
+        <span class="action__hint">Catálogo de WhatsApp</span>
+      </a>
+    </nav>
+
+    <nav class="social" aria-label="Redes sociales">
+      <a class="social__link" data-link="instagram" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.23-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41 1.27-.06 1.65-.07 4.85-.07M12 0C8.74 0 8.33.01 7.05.07 5.78.13 4.9.33 4.14.63a5.9 5.9 0 0 0-2.13 1.38A5.9 5.9 0 0 0 .63 4.14c-.3.76-.5 1.64-.56 2.91C.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.06 1.27.26 2.15.56 2.91a5.9 5.9 0 0 0 1.38 2.13 5.9 5.9 0 0 0 2.13 1.38c.76.3 1.64.5 2.91.56C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c1.27-.06 2.15-.26 2.91-.56a5.9 5.9 0 0 0 2.13-1.38 5.9 5.9 0 0 0 1.38-2.13c.3-.76.5-1.64.56-2.91.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.06-1.27-.26-2.15-.56-2.91a5.9 5.9 0 0 0-1.38-2.13A5.9 5.9 0 0 0 19.86.63c-.76-.3-1.64-.5-2.91-.56C15.67.01 15.26 0 12 0Z"/>
+          <path d="M12 5.84A6.16 6.16 0 1 0 18.16 12 6.16 6.16 0 0 0 12 5.84Zm0 10.16A4 4 0 1 1 16 12a4 4 0 0 1-4 4Z"/>
+          <circle cx="18.41" cy="5.59" r="1.44"/>
+        </svg>
+      </a>
+
+      <a class="social__link" data-link="whatsapp" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.25-.46-2.39-1.47-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.06 2.88 1.21 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.62.71.23 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.42-.07-.12-.27-.2-.57-.35Z"/>
+          <path d="M20.5 3.49A11.87 11.87 0 0 0 12.05 0C5.5 0 .18 5.32.17 11.87c0 2.09.55 4.14 1.59 5.94L.07 24l6.34-1.66a11.86 11.86 0 0 0 5.67 1.44h.01c6.54 0 11.87-5.32 11.87-11.87a11.8 11.8 0 0 0-3.46-8.42ZM12.1 21.79h-.01a9.86 9.86 0 0 1-5.02-1.38l-.36-.21-3.73.98 1-3.64-.24-.37a9.83 9.83 0 0 1-1.51-5.25c0-5.44 4.43-9.87 9.88-9.87a9.81 9.81 0 0 1 6.98 2.9 9.81 9.81 0 0 1 2.89 6.98c0 5.45-4.43 9.87-9.87 9.87Z"/>
+        </svg>
+      </a>
+    </nav>
+  </main>
+
+  <!--
+    Cartel flotante de instalación. Arranca oculto y el script de abajo lo
+    muestra solo si la app NO está instalada. Se cierra con la X y no vuelve
+    a molestar por 14 días.
+  -->
+  <aside class="install" id="install" hidden>
+    <img class="install__icon" src="icons/icon-192.png" alt="" width="42" height="42">
+    <div class="install__text">
+      <strong class="install__title">Descargá la app</strong>
+      <span class="install__hint" id="install-hint">Queda como ícono en tu celular</span>
+    </div>
+    <button class="install__btn" id="install-btn" type="button">Instalar</button>
+    <button class="install__close" id="install-close" type="button" aria-label="Cerrar aviso">&times;</button>
+  </aside>
+
+  <script src="config.js"></script>
+  <script>
+    // Asigna a cada enlace la URL correspondiente de CONFIG.
+    document.querySelectorAll('[data-link]').forEach(function (el) {
+      var url = CONFIG[el.dataset.link];
+      if (url) {
+        el.href = url;
+      } else {
+        // Enlace sin configurar: mejor ocultarlo que dejar un boton muerto.
+        el.hidden = true;
+        console.warn('CONFIG no tiene una URL para "' + el.dataset.link + '"');
+      }
+    });
+
+    // Si la foto no estuviera disponible, se cae al icono de la app en vez de
+    // mostrar el cuadrito roto.
+    document.getElementById('logo').addEventListener('error', function () {
+      this.src = 'icons/icon-512.png';
+    });
+
+    // Registro del service worker (habilita instalacion y cacheo offline).
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('service-worker.js').catch(function (err) {
+          console.warn('No se pudo registrar el service worker:', err);
+        });
+      });
+    }
+
+    /* --------------------------------------------------------------------
+       Cartel de instalación.
+
+       Cada navegador instala distinto, asi que hay tres caminos:
+       1. Android/Chrome/Edge: disparan 'beforeinstallprompt'. Guardamos el
+          evento y el boton "Instalar" abre el dialogo nativo.
+       2. iOS/Safari: no existe esa API. Se muestran las instrucciones
+          (Compartir -> Agregar a inicio) sin boton.
+       3. Cualquier otro navegador: si a los 3 segundos no hubo evento, se
+          muestra un aviso generico que apunta al menu del navegador.
+
+       En los tres casos el cartel solo aparece si la app NO esta instalada.
+       -------------------------------------------------------------------- */
+    (function () {
+      var cartel = document.getElementById('install');
+      var boton = document.getElementById('install-btn');
+      var cerrar = document.getElementById('install-close');
+      var pista = document.getElementById('install-hint');
+
+      var promptDiferido = null;
+      var promptSoportado = false;   // el navegador ofrece instalacion nativa
+      var CLAVE_DESCARTE = 'lash-install-descartado';
+      var DIAS_DESCARTE = 14;
+
+      function estaInstalada() {
+        return window.matchMedia('(display-mode: standalone)').matches ||
+               window.matchMedia('(display-mode: fullscreen)').matches ||
+               window.navigator.standalone === true ||           // iOS
+               document.referrer.indexOf('android-app://') === 0; // TWA
+      }
+
+      function esIOS() {
+        return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+               // iPad con iPadOS se identifica como Mac, pero tiene tactil.
+               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      }
+
+      function descartadoHacePoco() {
+        try {
+          var t = parseInt(localStorage.getItem(CLAVE_DESCARTE), 10);
+          return !!t && (Date.now() - t) < DIAS_DESCARTE * 86400000;
+        } catch (e) {
+          return false; // modo privado: no pasa nada, se muestra igual
+        }
+      }
+
+      function mostrar() {
+        if (!cartel.hidden || estaInstalada() || descartadoHacePoco()) return;
+        cartel.hidden = false;
+        document.body.classList.add('has-install');
+        // Fuerza un reflow para que el navegador registre la posición inicial
+        // y la transición se vea. (No usamos requestAnimationFrame porque no
+        // se dispara si la pestaña está en segundo plano.)
+        void cartel.offsetWidth;
+        cartel.classList.add('is-visible');
+      }
+
+      function ocultar() {
+        cartel.classList.remove('is-visible');
+        document.body.classList.remove('has-install');
+        setTimeout(function () { cartel.hidden = true; }, 320);
+      }
+
+      // 1. Android / Chrome / Edge
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        promptDiferido = e;
+        promptSoportado = true;
+        boton.hidden = false;
+        mostrar();
+      });
+
+      boton.addEventListener('click', function () {
+        if (!promptDiferido) return;
+        promptDiferido.prompt();
+        promptDiferido.userChoice.then(function (eleccion) {
+          promptDiferido = null;
+          if (eleccion.outcome === 'accepted') ocultar();
+        });
+      });
+
+      cerrar.addEventListener('click', function () {
+        try { localStorage.setItem(CLAVE_DESCARTE, String(Date.now())); } catch (e) {}
+        ocultar();
+      });
+
+      // Cuando el sistema confirma la instalación, el cartel ya no va más.
+      window.addEventListener('appinstalled', function () {
+        try { localStorage.setItem(CLAVE_DESCARTE, String(Date.now())); } catch (e) {}
+        ocultar();
+      });
+
+      if (estaInstalada()) return;
+
+      // 2. iOS / Safari
+      if (esIOS()) {
+        boton.hidden = true;
+        pista.textContent = 'Tocá Compartir y elegí "Agregar a inicio"';
+        setTimeout(mostrar, 1200);
+        return;
+      }
+
+      // 3. Resto de los navegadores
+      boton.hidden = true;
+      setTimeout(function () {
+        if (promptSoportado) return; // ya se encargó el camino 1
+        pista.textContent = 'Abrí el menú del navegador y elegí "Instalar app"';
+        mostrar();
+      }, 3000);
+    })();
+  </script>
+</body>
+</html>

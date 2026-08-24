@@ -1,0 +1,6 @@
+# Config local de las herramientas de desarrollo (no forma parte del sitio)
+.claude/
+
+# Basura de sistemas operativos
+.DS_Store
+Thumbs.db
