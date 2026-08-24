@@ -8,7 +8,7 @@
  * Al hacer un deploy con cambios, subir el numero de version de CACHE_NAME
  * para que los dispositivos descarten el cache viejo.
  */
-const CACHE_NAME = "lash-academy-v9";
+const CACHE_NAME = "lash-academy-v10";
 
 /**
  * Lo que hace falta para dibujar la pantalla. Se cachea antes de dar por

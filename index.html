@@ -248,6 +248,7 @@
 
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
       padding: 10px 12px;
       border-radius: 16px;
 
@@ -330,6 +331,20 @@
       line-height: 1;
       cursor: pointer;
     }
+
+    /* Instrucciones paso a paso, para los navegadores que no tienen
+       diálogo nativo de instalación. Se despliegan al tocar "Instalar". */
+    .install__pasos {
+      flex: 1 0 100%;
+      margin: 10px 2px 2px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(46, 33, 48, 0.14);
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: var(--color-text-on-surface);
+    }
+
+    .install__pasos[hidden] { display: none; }
 
     /* Agranda el área táctil de la X a 48px sin agrandar el dibujo. */
     .install__close::after {
@@ -419,6 +434,21 @@
         --logo-size: 168px;
       }
       .header__title { font-size: 2.25rem; }
+    }
+
+    /* En pantallas de poca altura el cartel desplegado no entra flotando sin
+       tapar los íconos: pasa al flujo, debajo de las redes, y la página
+       scrollea. */
+    @media (max-height: 700px) {
+      .install.is-expandido,
+      .install.is-expandido.is-visible {
+        position: static;
+        width: 100%;
+        max-width: var(--content-max-width);
+        margin: 16px auto 0;
+        opacity: 1;
+        transform: none;
+      }
     }
 
     /* Tablet acostada o ventana ancha pero baja: se vuelve a las medidas de
@@ -544,8 +574,9 @@
       <strong class="install__title">Descargá la app</strong>
       <span class="install__hint" id="install-hint">Queda como ícono en tu celular</span>
     </div>
-    <button class="install__btn" id="install-btn" type="button">Instalar</button>
+    <button class="install__btn" id="install-btn" type="button" aria-expanded="false" aria-controls="install-pasos">Instalar</button>
     <button class="install__close" id="install-close" type="button" aria-label="Cerrar aviso">&times;</button>
+    <p class="install__pasos" id="install-pasos" hidden></p>
   </aside>
 
   <script src="config.js"></script>
@@ -580,26 +611,33 @@
     /* --------------------------------------------------------------------
        Cartel de instalación.
 
-       Cada navegador instala distinto, asi que hay tres caminos:
-       1. Android/Chrome/Edge: disparan 'beforeinstallprompt'. Guardamos el
-          evento y el boton "Instalar" abre el dialogo nativo.
-       2. iOS/Safari: no existe esa API. Se muestran las instrucciones
-          (Compartir -> Agregar a inicio) sin boton.
-       3. Cualquier otro navegador: si a los 3 segundos no hubo evento, se
-          muestra un aviso generico que apunta al menu del navegador.
+       Cada navegador instala distinto. El botón "Instalar" SIEMPRE está y
+       siempre hace algo:
 
-       En los tres casos el cartel solo aparece si la app NO esta instalada.
+       1. Android (Chrome/Edge): el navegador avisa con 'beforeinstallprompt'.
+          El botón abre el diálogo nativo de instalación.
+       2. Cualquier otro caso (iPhone, navegador dentro de Instagram, Firefox,
+          Chrome que todavía no disparó el evento): el botón despliega los
+          pasos concretos para ese navegador.
+
+       El caso del navegador de Instagram importa especialmente: la app se
+       comparte desde la bio de Instagram, y su navegador interno NO puede
+       instalar aplicaciones. Sin avisarlo, el botón parece roto.
+
+       El cartel solo aparece si la app NO está instalada.
        -------------------------------------------------------------------- */
     (function () {
       var cartel = document.getElementById('install');
       var boton = document.getElementById('install-btn');
       var cerrar = document.getElementById('install-close');
       var pista = document.getElementById('install-hint');
+      var pasos = document.getElementById('install-pasos');
 
       var promptDiferido = null;
-      var promptSoportado = false;   // el navegador ofrece instalacion nativa
       var CLAVE_DESCARTE = 'lash-install-descartado';
       var DIAS_DESCARTE = 14;
+
+      var ua = navigator.userAgent;
 
       function estaInstalada() {
         return window.matchMedia('(display-mode: standalone)').matches ||
@@ -609,9 +647,15 @@
       }
 
       function esIOS() {
-        return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
-               // iPad con iPadOS se identifica como Mac, pero tiene tactil.
+        return /iphone|ipad|ipod/i.test(ua) ||
+               // iPad con iPadOS se identifica como Mac, pero tiene táctil.
                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      }
+
+      // Navegadores embebidos dentro de otra app (Instagram, Facebook, etc.).
+      // Ninguno puede instalar una PWA.
+      function esNavegadorDeApp() {
+        return /Instagram|FBAN|FBAV|FB_IAB|FBIOS|Line\/|TikTok|Twitter/i.test(ua);
       }
 
       function descartadoHacePoco() {
@@ -623,12 +667,26 @@
         }
       }
 
+      // Cuando el cartel flota sobre la pantalla, se reserva abajo el alto que
+      // ocupa, para que nunca tape los íconos de redes. Se recalcula cada vez
+      // porque al desplegar los pasos el cartel crece.
+      function ajustarEspacio() {
+        if (cartel.hidden || getComputedStyle(cartel).position !== 'fixed') {
+          document.body.style.paddingBottom = '';
+          return;
+        }
+        document.body.style.paddingBottom = (cartel.offsetHeight + 34) + 'px';
+      }
+
       function mostrar() {
         if (!cartel.hidden || estaInstalada() || descartadoHacePoco()) return;
-        // El icono del cartel se pide recien ahora, para no sumarlo a la carga
+        // El ícono del cartel se pide recién ahora, para no sumarlo a la carga
         // inicial de la pantalla.
-        var icono = cartel.querySelector("[data-src]");
-        if (icono) { icono.src = icono.getAttribute("data-src"); icono.removeAttribute("data-src"); }
+        var icono = cartel.querySelector('[data-src]');
+        if (icono) {
+          icono.src = icono.getAttribute('data-src');
+          icono.removeAttribute('data-src');
+        }
         cartel.hidden = false;
         document.body.classList.add('has-install');
         // Fuerza un reflow para que el navegador registre la posición inicial
@@ -636,25 +694,73 @@
         // se dispara si la pestaña está en segundo plano.)
         void cartel.offsetWidth;
         cartel.classList.add('is-visible');
+        ajustarEspacio();
       }
 
       function ocultar() {
         cartel.classList.remove('is-visible');
         document.body.classList.remove('has-install');
+        document.body.style.paddingBottom = '';
         setTimeout(function () { cartel.hidden = true; }, 320);
       }
 
-      // 1. Android / Chrome / Edge
+      // Los pasos que hay que seguir cuando el navegador no ofrece el diálogo
+      // nativo. Se arma según dónde esté abierta la página.
+      function textoDePasos() {
+        if (esNavegadorDeApp()) {
+          return '<strong>Este navegador no puede instalar apps.</strong> ' +
+                 'Tocá el menú <strong>⋯</strong> arriba a la derecha y elegí ' +
+                 '<strong>"Abrir en el navegador"</strong> (Chrome o Safari). ' +
+                 'Ahí sí vas a poder instalarla.';
+        }
+        if (esIOS()) {
+          return '1. Tocá <strong>Compartir</strong> (el cuadradito con la flecha).<br>' +
+                 '2. Deslizá y elegí <strong>"Agregar a inicio"</strong>.<br>' +
+                 '3. Tocá <strong>Agregar</strong>.';
+        }
+        return '1. Tocá el menú <strong>⋮</strong> arriba a la derecha.<br>' +
+               '2. Elegí <strong>"Instalar aplicación"</strong> o ' +
+               '<strong>"Agregar a pantalla principal"</strong>.';
+      }
+
+      function alternarPasos() {
+        if (pasos.hidden) {
+          pasos.innerHTML = textoDePasos();
+          pasos.hidden = false;
+          cartel.classList.add('is-expandido');
+          boton.setAttribute('aria-expanded', 'true');
+          ajustarEspacio();
+          // Si el cartel quedó en el flujo (pantalla baja), puede estar fuera
+          // de la vista: lo traemos.
+          if (getComputedStyle(cartel).position !== 'fixed') {
+            cartel.scrollIntoView({ block: 'end', behavior: 'smooth' });
+          }
+          return;
+        }
+        pasos.hidden = true;
+        cartel.classList.remove('is-expandido');
+        boton.setAttribute('aria-expanded', 'false');
+        ajustarEspacio();
+      }
+
+      // Camino 1: Android / Chrome / Edge. Puede llegar en cualquier momento,
+      // incluso después de que el cartel ya se mostró con las instrucciones.
       window.addEventListener('beforeinstallprompt', function (e) {
         e.preventDefault();
         promptDiferido = e;
-        promptSoportado = true;
-        boton.hidden = false;
+        pasos.hidden = true;
+        cartel.classList.remove('is-expandido');
+        boton.setAttribute('aria-expanded', 'false');
+        pista.textContent = 'Queda como ícono en tu celular';
         mostrar();
+        ajustarEspacio();
       });
 
       boton.addEventListener('click', function () {
-        if (!promptDiferido) return;
+        if (!promptDiferido) {
+          alternarPasos();
+          return;
+        }
         promptDiferido.prompt();
         promptDiferido.userChoice.then(function (eleccion) {
           promptDiferido = null;
@@ -673,23 +779,25 @@
         ocultar();
       });
 
+      // Si la pantalla rota o cambia de tamaño, se recalcula el espacio.
+      window.addEventListener('resize', ajustarEspacio);
+
       if (estaInstalada()) return;
 
-      // 2. iOS / Safari
-      if (esIOS()) {
-        boton.hidden = true;
-        pista.textContent = 'Tocá Compartir y elegí "Agregar a inicio"';
-        setTimeout(mostrar, 1200);
-        return;
-      }
-
-      // 3. Resto de los navegadores
-      boton.hidden = true;
+      // Camino 2: el resto. Se muestra el cartel igual, con el botón que
+      // despliega los pasos. En Chrome se espera un poco por si llega el
+      // evento nativo, así no aparecen instrucciones que no hacen falta.
+      var espera = (esIOS() || esNavegadorDeApp()) ? 1200 : 3000;
       setTimeout(function () {
-        if (promptSoportado) return; // ya se encargó el camino 1
-        pista.textContent = 'Abrí el menú del navegador y elegí "Instalar app"';
+        if (esNavegadorDeApp()) {
+          pista.textContent = 'Abrila en Chrome o Safari para instalarla';
+        } else if (esIOS()) {
+          pista.textContent = 'Agregala a tu pantalla de inicio';
+        } else if (!promptDiferido) {
+          pista.textContent = 'Instalala desde el menú del navegador';
+        }
         mostrar();
-      }, 3000);
+      }, espera);
     })();
   </script>
 </body>

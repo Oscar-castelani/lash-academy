@@ -30,7 +30,7 @@ whatsapp: "https://wa.me/XXXXXXXXXXX"
 ```
 
 Después de editar, subir la versión del cache en `service-worker.js`
-(`CACHE_NAME = "lash-academy-v10"`, `v11`, etc.) y desplegar. Sin ese cambio, los
+(`CACHE_NAME = "lash-academy-v11"`, `v11`, etc.) y desplegar. Sin ese cambio, los
 celulares que ya tienen la app instalada pueden seguir viendo la versión vieja
 durante un tiempo.
 
@@ -265,21 +265,37 @@ en la bio de Instagram.
 
 ## El cartel de "Descargá la app"
 
-Aparece flotando abajo de todo, solo si la app **no** está instalada. La lógica
-está al final de `index.html` y contempla tres casos:
+Aparece abajo de todo, solo si la app **no** está instalada. La lógica está al
+final de `index.html`. El botón **Instalar** está siempre y siempre hace algo:
 
-1. **Android (Chrome/Edge)**: el navegador avisa con el evento
-   `beforeinstallprompt`. El cartel muestra el botón **Instalar**, que abre el
-   diálogo nativo de instalación.
-2. **iPhone/iPad (Safari)**: iOS no tiene esa API. El cartel muestra la
-   instrucción "Tocá Compartir y elegí Agregar a inicio", sin botón.
-3. **Cualquier otro navegador**: si a los 3 segundos no hubo evento, se muestra
-   un aviso genérico que apunta al menú del navegador.
+1. **Android (Chrome/Edge)**: el navegador avisa con `beforeinstallprompt` y el
+   botón abre el diálogo nativo de instalación.
+2. **Cualquier otro caso** (iPhone, navegador embebido, Firefox, o un Chrome que
+   todavía no disparó el evento): el botón despliega los pasos concretos para
+   ese navegador.
 
-Si la persona cierra el cartel con la X, no vuelve a aparecer por 14 días (se
-guarda una marca de tiempo en `localStorage`; no se guarda ningún dato
-personal). Tampoco aparece si la app ya está corriendo instalada, ni después de
-que el sistema confirma la instalación.
+### El caso del navegador de Instagram
+
+Es el más importante, porque el enlace se comparte justamente desde la bio de
+Instagram. **El navegador interno de Instagram no puede instalar PWAs**: no
+existe la opción, ni por diálogo nativo ni por menú. Lo mismo vale para los
+navegadores embebidos de Facebook, TikTok y similares.
+
+Por eso se detectan por user agent y, en ese caso, el cartel explica que hay que
+abrir el enlace en Chrome o Safari (menú de tres puntos → "Abrir en el
+navegador"). Sin ese aviso el botón parece roto: la persona lo toca y no pasa
+nada, porque el navegador no tiene forma de instalar.
+
+### Comportamiento del cartel
+
+Si la persona lo cierra con la X, no vuelve a aparecer por 14 días (una marca de
+tiempo en `localStorage`; no se guarda ningún dato personal). Tampoco aparece si
+la app ya está corriendo instalada, ni después de que el sistema confirma la
+instalación.
+
+Al desplegar los pasos el cartel crece, así que reserva espacio abajo para no
+tapar los íconos de redes. En pantallas de menos de 700px de alto deja de flotar
+y pasa al flujo, debajo de las redes, y la página scrollea.
 
 Para volver a verlo mientras se prueba, borrar la clave
 `lash-install-descartado` del `localStorage` desde la consola del navegador:
