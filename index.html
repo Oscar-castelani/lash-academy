@@ -246,9 +246,11 @@
       width: calc(100% - 28px);
       max-width: var(--content-max-width);
 
+      /* Dos filas apiladas: la de siempre y, si se despliegan, los pasos.
+         La de arriba NO envuelve, para que la X no se caiga al renglon de
+         abajo en pantallas angostas. */
       display: flex;
-      align-items: center;
-      flex-wrap: wrap;
+      flex-direction: column;
       padding: 10px 12px;
       border-radius: 16px;
 
@@ -268,6 +270,12 @@
     .install.is-visible {
       opacity: 1;
       transform: translateX(-50%) translateY(0);
+    }
+
+    .install__fila {
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
     }
 
     .install__icon {
@@ -335,7 +343,6 @@
     /* Instrucciones paso a paso, para los navegadores que no tienen
        diálogo nativo de instalación. Se despliegan al tocar "Instalar". */
     .install__pasos {
-      flex: 1 0 100%;
       margin: 10px 2px 2px;
       padding-top: 10px;
       border-top: 1px solid rgba(46, 33, 48, 0.14);
@@ -598,14 +605,16 @@
     a molestar por 14 días.
   -->
   <aside class="install" id="install" hidden>
-    <!-- Sin src: se carga recien cuando el cartel se muestra (ver mostrar()). -->
-    <img class="install__icon" data-src="icons/icon.svg" alt="" width="42" height="42" decoding="async">
-    <div class="install__text">
-      <strong class="install__title">Descargá la app</strong>
-      <span class="install__hint" id="install-hint">Queda como ícono en tu celular</span>
+    <div class="install__fila">
+      <!-- Sin src: se carga recien cuando el cartel se muestra (ver mostrar()). -->
+      <img class="install__icon" data-src="icons/icon.svg" alt="" width="42" height="42" decoding="async">
+      <div class="install__text">
+        <strong class="install__title">Descargá la app</strong>
+        <span class="install__hint" id="install-hint">Queda como ícono en tu celular</span>
+      </div>
+      <button class="install__btn" id="install-btn" type="button" aria-expanded="false" aria-controls="install-pasos">Instalar</button>
+      <button class="install__close" id="install-close" type="button" aria-label="Cerrar aviso">&times;</button>
     </div>
-    <button class="install__btn" id="install-btn" type="button" aria-expanded="false" aria-controls="install-pasos">Instalar</button>
-    <button class="install__close" id="install-close" type="button" aria-label="Cerrar aviso">&times;</button>
     <p class="install__pasos" id="install-pasos" hidden></p>
   </aside>
 
