@@ -714,6 +714,15 @@
         return esIOS() && /CriOS|FxiOS|EdgiOS|OPT\//i.test(ua);
       }
 
+      // Samsung Internet. Instala la PWA generando un APK propio que, en
+      // Android 14 y posteriores, Play Protect a veces bloquea por apuntar a
+      // una versión vieja del sistema. El APK lo arma el navegador, no
+      // nosotros: desde acá no se puede cambiar. La salida es instalar desde
+      // Chrome, que usa el servicio de Google y no da ese problema.
+      function esSamsung() {
+        return /SamsungBrowser/i.test(ua);
+      }
+
       function descartadoHacePoco() {
         try {
           var t = parseInt(localStorage.getItem(CLAVE_DESCARTE), 10);
@@ -795,9 +804,16 @@
                  'arriba a la derecha.</span>' +
                  '<span class="install__flecha" aria-hidden="true">↓</span>';
         }
-        return '1. Tocá el menú <strong>⋮</strong> arriba a la derecha.<br>' +
-               '2. Elegí <strong>"Instalar aplicación"</strong> o ' +
-               '<strong>"Agregar a pantalla principal"</strong>.';
+        var pasosAndroid =
+          '<span class="install__paso">1. Tocá el menú <strong>⋮</strong> arriba a la derecha.</span>' +
+          '<span class="install__paso">2. Elegí <strong>"Instalar aplicación"</strong> o ' +
+          '<strong>"Agregar a pantalla principal"</strong>.</span>';
+        if (esSamsung()) {
+          pasosAndroid += '<span class="install__paso">Si aparece un aviso de ' +
+            '<strong>Play Protect</strong>, instalala desde <strong>Chrome</strong>: ' +
+            'es el paquete que arma este navegador, no la página.</span>';
+        }
+        return pasosAndroid;
       }
 
       function alternarPasos() {
@@ -833,6 +849,35 @@
         ajustarEspacio();
       });
 
+      // Cuando la instalación se completa de verdad, el navegador dispara
+      // 'appinstalled'. Si la persona aceptó y ese aviso no llega, algo la
+      // frenó: en Android el sospechoso habitual es Play Protect bloqueando
+      // el APK que genera Samsung Internet. En ese caso se vuelve a mostrar
+      // el cartel explicando cómo salir del paso.
+      var seInstalo = false;
+      var ESPERA_INSTALACION = 15000;
+
+      function avisarQueNoSeInstalo() {
+        if (seInstalo || estaInstalada()) return;
+        pista.textContent = '¿No se instaló? Mirá esto';
+        pasos.innerHTML = falloDeInstalacion;
+        pasos.hidden = false;
+        cartel.classList.add('is-expandido');
+        boton.setAttribute('aria-expanded', 'true');
+        cartel.hidden = true;   // para que mostrar() no corte de entrada
+        mostrar();
+      }
+
+      var falloDeInstalacion =
+        '<strong>Android puede haber bloqueado la instalación.</strong> ' +
+        'El aviso de Play Protect no es por esta página: es por el paquete ' +
+        'que arma el navegador para instalarla.' +
+        '<span class="install__paso">La salida más simple: abrí este mismo ' +
+        'enlace en <strong>Chrome</strong> y tocá Instalar de nuevo.</span>' +
+        '<span class="install__paso">Si igual no te deja, tocá el menú ' +
+        '<strong>⋮</strong> y elegí <strong>"Agregar a pantalla de inicio"</strong>: ' +
+        'el ícono te queda igual.</span>';
+
       boton.addEventListener('click', function () {
         if (!promptDiferido) {
           alternarPasos();
@@ -841,7 +886,10 @@
         promptDiferido.prompt();
         promptDiferido.userChoice.then(function (eleccion) {
           promptDiferido = null;
-          if (eleccion.outcome === 'accepted') ocultar();
+          if (eleccion.outcome !== 'accepted') return;
+          ocultar();
+          // Se le da tiempo: generar el paquete puede tardar unos segundos.
+          setTimeout(avisarQueNoSeInstalo, ESPERA_INSTALACION);
         });
       });
 
@@ -852,6 +900,7 @@
 
       // Cuando el sistema confirma la instalación, el cartel ya no va más.
       window.addEventListener('appinstalled', function () {
+        seInstalo = true;
         try { localStorage.setItem(CLAVE_DESCARTE, String(Date.now())); } catch (e) {}
         ocultar();
       });

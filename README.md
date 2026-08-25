@@ -30,7 +30,7 @@ whatsapp: "https://wa.me/XXXXXXXXXXX"
 ```
 
 Después de editar, subir la versión del cache en `service-worker.js`
-(`CACHE_NAME = "lash-academy-v14"`, `v11`, etc.) y desplegar. Sin ese cambio, los
+(`CACHE_NAME = "lash-academy-v15"`, `v11`, etc.) y desplegar. Sin ese cambio, los
 celulares que ya tienen la app instalada pueden seguir viendo la versión vieja
 durante un tiempo.
 
@@ -311,6 +311,29 @@ plataforma permite.
 Si la persona está en Chrome o Firefox de iPhone, el cartel le pide que abra el
 enlace en Safari: en esos navegadores el menú de compartir está en otro lugar y
 confunde.
+
+### Si Android muestra "Aplicación no segura bloqueada"
+
+Es un aviso de **Google Play Protect**, y **no es sobre el sitio**. Cuando se
+instala una PWA en Android, el navegador arma un paquete (un APK chiquito) que
+envuelve la app. Ese paquete lo genera el navegador, no este proyecto: desde el
+código no hay nada que se pueda cambiar para evitarlo.
+
+El texto "se desarrolló para usarse en una versión anterior de Android" quiere
+decir que ese paquete apunta a una versión vieja del sistema. Pasa sobre todo
+con **Samsung Internet**, que arma el paquete por su cuenta. Chrome usa el
+servicio de Google, que genera paquetes al día, y no da ese problema.
+
+Las dos salidas, en orden:
+
+1. **Instalar desde Chrome.** Abrir el mismo enlace en Chrome y tocar Instalar.
+2. **Menú ⋮ → "Agregar a pantalla de inicio".** No arma ningún paquete, así que
+   Play Protect ni se entera. El ícono queda igual en la pantalla del teléfono.
+
+La app lo contempla: si la persona acepta instalar y 15 segundos después el
+navegador no confirmó la instalación (evento `appinstalled`), el cartel vuelve
+a aparecer con esas dos salidas. Y si detecta Samsung Internet, los pasos ya
+avisan de entrada.
 
 ### El caso del navegador de Instagram
 
