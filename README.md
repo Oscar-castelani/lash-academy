@@ -5,7 +5,8 @@ pantalla, instalable en el celular, con dos acciones principales (reservar turno
 y comprar insumos) y accesos a redes sociales.
 
 No hay backend, base de datos ni framework: HTML + CSS + JavaScript vanilla
-servidos como archivos estáticos desde Firebase Hosting.
+servidos como archivos estáticos. Publicado en GitHub Pages:
+https://oscar-castelani.github.io/lash-academy/
 
 ## Estructura
 
@@ -30,7 +31,7 @@ whatsapp: "https://wa.me/XXXXXXXXXXX"
 ```
 
 Después de editar, subir la versión del cache en `service-worker.js`
-(`CACHE_NAME = "lash-academy-v15"`, `v11`, etc.) y desplegar. Sin ese cambio, los
+(`CACHE_NAME = "lash-academy-v15"`, `v16`, etc.) y desplegar. Sin ese cambio, los
 celulares que ya tienen la app instalada pueden seguir viendo la versión vieja
 durante un tiempo.
 
