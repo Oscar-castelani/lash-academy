@@ -18,7 +18,8 @@ https://oscar-castelani.github.io/lash-academy/
 ├── service-worker.js   Cacheo de assets estáticos (funciona sin conexión)
 ├── firebase.json       Configuración de Firebase Hosting
 ├── /icons              icon.svg (original) + los PNG generados a partir de él
-└── /assets             cintia.jpg (la foto del encabezado)
+├── /assets             cintia.jpg (la foto del encabezado)
+└── /pruebas            Banco de pruebas del cartel (no se publica)
 ```
 
 ## Cómo actualizar un enlace
@@ -31,7 +32,7 @@ whatsapp: "https://wa.me/XXXXXXXXXXX"
 ```
 
 Después de editar, subir la versión del cache en `service-worker.js`
-(`CACHE_NAME = "lash-academy-v15"`, `v16`, etc.) y desplegar. Sin ese cambio, los
+(`CACHE_NAME = "lash-academy-v16"`, `v16`, etc.) y desplegar. Sin ese cambio, los
 celulares que ya tienen la app instalada pueden seguir viendo la versión vieja
 durante un tiempo.
 
@@ -365,6 +366,14 @@ Para volver a verlo mientras se prueba, borrar la clave
 ```bash
 localStorage.removeItem('lash-install-descartado')
 ```
+
+## Probar el cartel sin tener los telefonos
+
+En [`pruebas/`](pruebas/) hay un banco que simula cada navegador (Chrome
+Android, Samsung Internet, Safari de iPhone, Chrome de iPhone, el navegador de
+Instagram) y dispara los eventos reales de instalación sobre un iframe. Cubre
+11 escenarios, incluido el de la instalación que queda a medias. Las
+instrucciones están en [`pruebas/README.md`](pruebas/README.md).
 
 ## Verificar la instalación
 

@@ -743,8 +743,11 @@
         document.body.style.paddingBottom = (cartel.offsetHeight + 34) + 'px';
       }
 
-      function mostrar() {
-        if (!cartel.hidden || estaInstalada() || descartadoHacePoco()) return;
+      // forzar: se usa cuando la persona acaba de intentar instalar. En ese
+      // caso el aviso importa aunque haya cerrado el cartel dias atras.
+      function mostrar(forzar) {
+        if (!cartel.hidden || estaInstalada()) return;
+        if (!forzar && descartadoHacePoco()) return;
         // El ícono del cartel se pide recién ahora, para no sumarlo a la carga
         // inicial de la pantalla.
         var icono = cartel.querySelector('[data-src]');
@@ -865,7 +868,7 @@
         cartel.classList.add('is-expandido');
         boton.setAttribute('aria-expanded', 'true');
         cartel.hidden = true;   // para que mostrar() no corte de entrada
-        mostrar();
+        mostrar(true);
       }
 
       var falloDeInstalacion =
