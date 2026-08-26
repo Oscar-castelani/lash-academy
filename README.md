@@ -32,7 +32,7 @@ whatsapp: "https://wa.me/XXXXXXXXXXX"
 ```
 
 Después de editar, subir la versión del cache en `service-worker.js`
-(`CACHE_NAME = "lash-academy-v16"`, `v16`, etc.) y desplegar. Sin ese cambio, los
+(`CACHE_NAME = "lash-academy-v16"`, `v17`, etc.) y desplegar. Sin ese cambio, los
 celulares que ya tienen la app instalada pueden seguir viendo la versión vieja
 durante un tiempo.
 
